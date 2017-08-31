@@ -36,6 +36,7 @@ pipeline {
                 $SBT clean compile "project api" universal:packageBin coverage test coverageReport
                 cp target/universal/ons-sbr-api-*.zip dev-ons-sbr-api.zip
                 cp target/universal/ons-sbr-api-*.zip test-ons-sbr-api.zip
+                cp target/universal/ons-sbr-api-*.zip prod-ons-sbr-api.zip
                 '''
             }
         }
@@ -99,6 +100,7 @@ pipeline {
                 dir('conf') {
                     git(url: "$GITLAB_URL/StatBusReg/sbr-api.git", credentialsId: 'sbr-gitlab-id', branch: 'feature/env-key')
                 }
+                packageAsJars()
                 // packageApp('dev')
                 // packageApp('test')
                 // stash name: "zip"
@@ -142,7 +144,8 @@ pipeline {
                 branch "master"
             }
             steps {
-                colourText("success", 'Package.')
+                colourText("success", 'Packaging in progress...')
+                packageAsJars()
             }
 
         }
@@ -167,7 +170,7 @@ pipeline {
                         env.DEPLOY_NAME = "test"
                     }
                     else if (BRANCH_NAME == "master") {
-                        env.DEPLOY_NAME = "live"
+                        env.DEPLOY_NAME = "prod"
                     }
                 }
                 milestone(1)
@@ -228,9 +231,47 @@ pipeline {
 //   }
 // }
 
+
+def packageAsJars() {
+    agent any
+    steps {
+        colourText("info","Packaging as FAT jar")
+
+        sh '''
+            sbt clean compile assembly
+        '''
+    }
+    post {
+        success {
+            colourText("info","Successfully packaged as Far Jar")
+        }
+        failure {
+            colourText("warn","Failed to package as Fat Jar.")
+        }
+    }
+    steps {
+        colourText("info","Packaging as Thin jar")
+
+        sh '''
+            sbt clean compile package
+        '''
+    }
+    post {
+        success {
+            colourText("info","Successfully packaged as Thin Jar")
+        }
+        failure {
+            colourText("warn","Failed to package as Thin Jar.")
+        }
+    }
+}
+
+
 def deploy () {
     echo "Deploying Api app to ${env.DEPLOY_NAME}"
     withCredentials([string(credentialsId: "sbr-api-dev-secret-key", variable: 'APPLICATION_SECRET')]) {
-        deployToCloudFoundry("cloud-foundry-sbr-delete-${env.DEPLOY_NAME}-user", 'sbr', "${env.DEPLOY_NAME}", "${env.DEPLOY_NAME}-sbr-api", "${env.DEPLOY_NAME}-ons-sbr-api.zip", "conf/${env.DEPLOY_NAME}/manifest.yml")
+        deployToCloudFoundry("cloud-foundry-sbr-${env.DEPLOY_NAME}-user", 'sbr', "${env.DEPLOY_NAME}", "${env.DEPLOY_NAME}-sbr-api", "${env.DEPLOY_NAME}-ons-sbr-api.zip", "conf/${env.DEPLOY_NAME}/manifest.yml")
     }
 }
+
+​
