@@ -44,8 +44,8 @@ class SearchController @Inject() (ws: WSClient) extends ControllerUtils {
       val res = id match {
         case Some(id) if id.length > 0 => findRecord(id, "conf/sample/enterprise.csv") match {
           case Nil =>
-            logger.debug(s"No record found for id: ${id}")
-            NotFound(errAsJson(404, "not found", s"Could not find value ${id}")).future
+            logger.debug(s"No record found for id: $id")
+            NotFound(errAsJson(404, "not found", s"Could not find value $id")).future
           case x => Ok(s"""${EnterpriseObj.toString(EnterpriseObj.toMap, x)}""").as(JSON).future
         }
         case _ => BadRequest(errAsJson(400, "missing parameter", "No query string found")).future
