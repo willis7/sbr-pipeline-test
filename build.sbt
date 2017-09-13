@@ -90,7 +90,7 @@ lazy val api = (project in file("."))
       excludeAll ExclusionRule("commons-logging", "commons-logging")
     ),
     // assembly
-    assemblyJarName in assembly := s"sbr-api-${Versions.version}.jar",
+    assemblyJarName in assembly := s"sbr-api-v1.jar",
     assemblyMergeStrategy in assembly := {
       case PathList("javax", "servlet", xs@_*)                           => MergeStrategy.last
       case PathList("org", "apache", xs@_*)                              => MergeStrategy.last
