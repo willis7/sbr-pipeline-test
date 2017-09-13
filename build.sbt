@@ -14,7 +14,7 @@ lazy val Versions = new {
 
 lazy val Constant = new {
   val appName = "ons-sbr-api"
-  val detail = Versions.version
+  //val detail = Versions.version
   val organisation = "ons"
   val team = "sbr"
 }
