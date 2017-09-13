@@ -9,7 +9,7 @@ lazy val ITest = config("it") extend Test
 
 lazy val Versions = new {
   val scala = "2.11.11"
-  val appVersion = "0.1"
+  val appVersion = ""
   val scapegoatVersion = "1.1.0"
   val util = "0.27.8"
 }
@@ -37,8 +37,10 @@ lazy val testSettings = Seq(
 lazy val publishingSettings = Seq (
   publishArtifact := false,
   publishTo := Some("Artifactory Realm" at "http://localhost:8081/artifactory/libs-snapshot-local;build.timestamp=" + new java.util.Date().getTime),
-  credentials += Credentials("Artifactory Realm", "localhost", "<USERNAME>", "<PASS>")
-//  credentials += Credentials(),
+  credentials += Credentials("Artifactory Realm", "localhost", "<USERNAME>", "<PASS>"),
+  releaseTagComment := s"$name ${version.value}",
+  releaseCommitMessage := s"Setting Release tag to ${version.value}"
+
 //  publishMavenStyle := true,
 //  crossScalaVersions := Seq(Versions.scala)
 
@@ -85,7 +87,7 @@ lazy val api = (project in file("."))
   .settings(
     name := Constant.appName,
     moduleName := "control-api",
-    version := Versions.appVersion,
+    version := version.value,
     buildInfoPackage := "controllers",
     // gives us last compile time and tagging info
     buildInfoKeys := Seq[BuildInfoKey](
@@ -115,7 +117,7 @@ lazy val api = (project in file("."))
         excludeAll ExclusionRule("commons-logging", "commons-logging")
     ),
     // assembly
-    assemblyJarName in assembly := s"${Constant.appName}-${Versions.appVersion}.jar",
+    assemblyJarName in assembly := s"${Constant.appName}-${version.value}.jar",
     assemblyMergeStrategy in assembly := {
       case PathList("javax", "servlet", xs @ _*)                         => MergeStrategy.last
       case PathList("org", "apache", xs @ _*)                            => MergeStrategy.last
