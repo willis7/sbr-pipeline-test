@@ -36,13 +36,10 @@ lazy val testSettings = Seq(
 
 lazy val publishingSettings = Seq (
   publishArtifact := false,
-  publishTo := Some("Artifactory Realm" at "http://localhost:8081/artifactory/libs-snapshot-local;build.timestamp=" + new java.util.Date().getTime),
-  credentials += Credentials("Artifactory Realm", "localhost", "<USERNAME>", "<PASS>"),
+//  publishTo := None,
+//  credentials += Credentials("Artifactory Realm", "localhost", "<USERNAME>", "<PASS>"),
   releaseTagComment := s"$name ${version.value}",
   releaseCommitMessage := s"Setting Release tag to ${version.value}"
-
-//  publishMavenStyle := true,
-//  crossScalaVersions := Seq(Versions.scala)
 
 )
 
