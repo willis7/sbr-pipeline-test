@@ -38,7 +38,7 @@ lazy val publishingSettings = Seq (
   publishArtifact := false,
 //  publishArtifact in (Compile, packageBin) := false,
 //  publish := { },
-//  publishTo := Some(Resolver.file("Unused transient repository", file("target/unusedrepo"))),
+  publishTo := Some("Artifactory Realm" at "Unused transient repository"),
 //  publishLocal := {},
 //  publish := {},
 //  publishTo := Some("Artifactory Realm" at "http://localhost:8081/artifactory/libs-snapshot-local;build.timestamp=" + new java.util.Date().getTime),
