@@ -39,8 +39,8 @@ lazy val publishingSettings = Seq (
 //  publishArtifact in (Compile, packageBin) := false,
 //  publish := { },
 //  publishTo := Some(Resolver.file("Unused transient repository", file("target/unusedrepo"))),
-  publishLocal := {},
-  publish := {},
+//  publishLocal := {},
+//  publish := {},
 //  publishTo := Some("Artifactory Realm" at "http://localhost:8081/artifactory/libs-snapshot-local;build.timestamp=" + new java.util.Date().getTime),
 //  credentials += Credentials("Artifactory Realm", "localhost", "<USERNAME>", "<PASS>"),
   releaseTagComment := s"$name ${version.value}",
@@ -87,6 +87,8 @@ lazy val api = (project in file("."))
   .settings(testSettings:_*)
   .settings(publishingSettings:_*)
   .settings(
+    publishLocal := {},
+    publish := {},
     name := Constant.appName,
     moduleName := "control-api",
     version := version.value,
