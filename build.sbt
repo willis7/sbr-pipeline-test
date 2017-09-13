@@ -6,7 +6,7 @@ licenses := Seq("MIT-License" -> url("https://opensource.org/licenses/MIT"))
 
 lazy val Versions = new {
   val scala = "2.11.11"
-  val version = "0.1"
+  //val version = "0.1"
   val scapegoatVersion = "1.1.0"
   val util = "0.27.8"
 }
@@ -65,7 +65,7 @@ lazy val api = (project in file("."))
     buildInfoKeys := Seq[BuildInfoKey](
       organization,
       name,
-      version,
+      //version,
       scalaVersion,
       sbtVersion,
       BuildInfoKey.action("gitVersion") {
