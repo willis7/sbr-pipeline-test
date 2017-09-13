@@ -37,7 +37,7 @@ lazy val testSettings = Seq(
 lazy val publishingSettings = Seq (
   publishArtifact := false,
   publishTo := None,
-//  credentials += Credentials("Artifactory Realm", "localhost", "<USERNAME>", "<PASS>"),
+  credentials += Credentials("Artifactory Realm", "localhost", "<USERNAME>", "<PASS>"),
   releaseTagComment := s"$name ${version.value}",
   releaseCommitMessage := s"Setting Release tag to ${version.value}"
 
