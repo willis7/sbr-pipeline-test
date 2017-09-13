@@ -2,8 +2,11 @@ import play.sbt.PlayScala
 import sbtbuildinfo.BuildInfoPlugin.autoImport._
 import sbtassembly.AssemblyPlugin.autoImport._
 
+val publishRepo = settingKey[String]("publishRepo")
+
 licenses := Seq("MIT-License" -> url("https://github.com/ONSdigital/sbr-control-api/blob/master/LICENSE"))
 
+publishRepo := sys.props.getOrElse("publishRepo", default = "Unused transient repository")
 // key-bindings
 lazy val ITest = config("it") extend Test
 
@@ -36,15 +39,9 @@ lazy val testSettings = Seq(
 
 lazy val publishingSettings = Seq (
   publishArtifact := false,
-//  publishArtifact in (Compile, packageBin) := false,
-//  publish := { },
-  publishTo := Some("Artifactory Realm" at "Unused transient repository"),
-//  publishLocal := {},
-//  publish := {},
-//  publishTo := Some("Artifactory Realm" at "http://localhost:8081/artifactory/libs-snapshot-local;build.timestamp=" + new java.util.Date().getTime),
-//  credentials += Credentials("Artifactory Realm", "localhost", "<USERNAME>", "<PASS>"),
-  releaseTagComment := s"$name ${version.value}",
-  releaseCommitMessage := s"Setting Release tag to ${version.value}"
+  publishTo := Some("Artifactory Realm" at publishRepo.value),
+  releaseTagComment := s"Releasing $name ${(version in ThisBuild).value}",
+  releaseCommitMessage := s"Setting Release tag to ${(version in ThisBuild).value}"
 
 )
 
