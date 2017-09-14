@@ -42,7 +42,7 @@ lazy val publishingSettings = Seq(
   publishArtifact := false,
   publishTo := Some("Artifactory Realm" at publishRepo.value),
   releaseTagComment := s"Releasing $name ${(version in ThisBuild).value}",
-  releaseCommitMessage := s"Setting Release tag to ${(version in ThisBuild).value}"
+  releaseCommitMessage := s"Setting Release tag to ${(version in ThisBuild).value}",
   // no commit - ignore zip and other package files
   releaseIgnoreUntrackedFiles := true
 )
