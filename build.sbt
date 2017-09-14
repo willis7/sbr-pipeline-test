@@ -3,11 +3,11 @@ import sbtbuildinfo.BuildInfoPlugin.autoImport._
 import sbtassembly.AssemblyPlugin.autoImport._
 import BuildConfig._
 
-//val publishRepo = settingKey[String]("publishRepo")
+val publishRepo = settingKey[String]("publishRepo")
 
 licenses := Seq("MIT-License" -> url("https://github.com/ONSdigital/sbr-control-api/blob/master/LICENSE"))
 
-//publishRepo := sys.props.getOrElse("publishRepo", default = "Unused transient repository")
+publishRepo := sys.props.getOrElse("publishRepo", default = "Unused transient repository")
 // key-bindings
 lazy val ITest = config("it") extend Test
 
