@@ -5,6 +5,7 @@ import sbt.{settingKey, config, Test}
   */
 object BuildConfig {
   // Settings Keys
+
   lazy val publishRepo = settingKey[String]("publishRepo")
 
   // key-bindings
