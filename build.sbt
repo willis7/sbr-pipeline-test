@@ -1,7 +1,7 @@
 import play.sbt.PlayScala
 import sbtbuildinfo.BuildInfoPlugin.autoImport._
 import sbtassembly.AssemblyPlugin.autoImport._
-import BuildConfig._
+// import BuildConfig._
 
 val publishRepo = settingKey[String]("publishRepo")
 
