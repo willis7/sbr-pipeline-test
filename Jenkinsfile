@@ -1,13 +1,28 @@
 #!groovy
-@Library('jenkins-pipeline-shared@temporary') _
+@Library('jenkins-pipeline-shared@feature/version') _
 
 pipeline {
-    agent any
+    environment {
+        RELEASE_TYPE = "PATCH"
+
+        BRANCH_DEV = "development"
+        BRANCH_TEST = "release"
+        BRANCH_PROD = "master"
+
+        DEPLOY_DEV = "dev"
+        DEPLOY_TEST = "test"
+        DEPLOY_PROD = "prod"
+        
+        GIT_TYPE = "Github"
+        GIT_CREDS = "github-sbr-user"
+    }
     options {
         skipDefaultCheckout()
         buildDiscarder(logRotator(numToKeepStr: '30', artifactNumToKeepStr: '30'))
-        timeout(time: 30, unit: 'MINUTES')
+        timeout(time: 15, unit: 'MINUTES')
+        timestamps()
     }
+    agent any
     stages {
         stage('Checkout'){
             agent any
@@ -36,6 +51,7 @@ pipeline {
                 $SBT clean compile "project api" universal:packageBin coverage test coverageReport
                 cp target/universal/ons-sbr-api-*.zip dev-ons-sbr-api.zip
                 cp target/universal/ons-sbr-api-*.zip test-ons-sbr-api.zip
+                cp target/universal/ons-sbr-api-*.zip prod-ons-sbr-api.zip
                 '''
             }
         }
@@ -50,14 +66,14 @@ pipeline {
                         },
                         "Style" : {
                             colourText("info","Running style tests")
-                            sh '''
-                            $SBT scalastyleGenerateConfig
-                            $SBT scalastyle
-                            '''
+                            // sh '''
+                            // $SBT scalastyleGenerateConfig
+                            // $SBT scalastyle
+                            // '''
                         },
                         "Additional" : {
                             colourText("info","Running additional tests")
-                            sh "$SBT scapegoat"
+                            // sh "$SBT scapegoat"
                         }
                 )
             }
@@ -71,8 +87,8 @@ pipeline {
                     colourText("info","Generating reports for tests")
                     //   junit '**/target/test-reports/*.xml'
 
-                    step([$class: 'CoberturaPublisher', coberturaReportFile: '**/target/scala-2.11/coverage-report/*.xml'])
-                    step([$class: 'CheckStylePublisher', pattern: 'target/scalastyle-result.xml, target/scala-2.11/scapegoat-report/scapegoat-scalastyle.xml'])
+                    // step([$class: 'CoberturaPublisher', coberturaReportFile: '**/target/scala-2.11/coverage-report/*.xml'])
+                    // step([$class: 'CheckStylePublisher', pattern: 'target/scalastyle-result.xml, target/scala-2.11/scapegoat-report/scapegoat-scalastyle.xml'])
                 }
                 failure {
                     colourText("warn","Failed to retrieve reports.")
@@ -96,101 +112,120 @@ pipeline {
                     env.NODE_STAGE = "Bundle"
                 }
                 colourText("info", "Bundling....")
-                dir('conf') {
-                    git(url: "$GITLAB_URL/StatBusReg/sbr-api.git", credentialsId: 'sbr-gitlab-id', branch: 'feature/env-key')
-                }
+                // dir('conf') {
+                //     git(url: "$GITLAB_URL/StatBusReg/sbr-api.git", credentialsId: 'sbr-gitlab-id', branch: 'feature/develop')
+                // }
+                // packageAsJars()
                 // packageApp('dev')
                 // packageApp('test')
                 // stash name: "zip"
             }
         }
 
-
-        stage ('Approve') {
-            agent { label 'adrianharristesting' }
-            when {
-                anyOf {
-                    branch "develop"
-                    branch "release"
-                    branch "master"
-                }
-            }
+        stage("Releases"){
+            agent any
             steps {
                 script {
-                    env.NODE_STAGE = "Approve"
-                }
-                timeout(time: 2, unit: 'MINUTES') {
-                    input message: 'Do you wish to deploy the build to ${env.BRANCH_NAME} (Note: Live deployment will create an artifact)?'
-                }
-            }
-        }
+                    env.NODE_STAGE = "Releases"
+                    // sh 'git for-each-ref --count=1 --sort=-taggerdate --merged'
+                    // sh 'git tag --sort=-taggerdate --merged'
+                    currentTag = getLatestGitTag()
+                    colourText("info", "Found latest tag: ${currentTag}")
+                    newTag =  IncrementTag( currentTag, RELEASE_TYPE )
+                    colourText("info", "Generated new tag: ${newTag}")
+                    push(newTag, currentTag)
 
-
-        stage ('Release') {
-            agent any
-            when {
-                branch "master"
-            }
-            steps {
-                colourText("success", 'Release.')
-            }
-        }
-
-        stage ('Package and Push Artifact') {
-            agent any
-            when {
-                branch "master"
-            }
-            steps {
-                colourText("success", 'Package.')
-            }
-
-        }
-
-        stage('Deploy'){
-            agent any
-            when {
-                anyOf {
-                    branch "develop"
-                    branch "release"
-                    branch "master"
-                }
-            }
-            steps {
-                colourText("success", 'Deploy.')
-                script {
-                    env.NODE_STAGE = "Deploy"
-                    if (BRANCH_NAME == "develop") {
-                        env.DEPLOY_NAME = "dev"
-                    }
-                    else if  (BRANCH_NAME == "release") {
-                        env.DEPLOY_NAME = "test"
-                    }
-                    else if (BRANCH_NAME == "master") {
-                        env.DEPLOY_NAME = "live"
-                    }
-                }
-                milestone(1)
-                lock('Deployment Initiated') {
-                    colourText("info", 'deployment in progress')
-                    deploy()
-                    // unstash zip
                 }
             }
         }
+        
+        
+        // stage ('Approve') {
+        //     agent { label 'adrianharristesting' }
+        //     when {
+        //         anyOf {
+        //             branch "develop"
+        //             branch "release"
+        //             branch "master"
+        //         }
+        //     }
+        //     steps {
+        //         script {
+        //             env.NODE_STAGE = "Approve"
+        //         }
+        //         timeout(time: 2, unit: 'MINUTES') {
+        //             input message: 'Do you wish to deploy the build to ${env.BRANCH_NAME} (Note: Live deployment will create an artifact)?'
+        //         }
+        //     }
+        // }
 
-        stage('Integration Tests') {
-            agent { label 'adrianharristesting' }
-            when {
-                anyOf {
-                    branch "develop"
-                    branch "release"
-                }
-            }
-            steps {
-                colourText("success", 'Integration Tests - For Release or Dev environment.')
-            }
-        }
+
+        // stage ('Release') {
+        //     agent any
+        //     when {
+        //         branch "master"
+        //     }
+        //     steps {
+        //         colourText("success", 'Release.')
+        //     }
+        // }
+
+        // stage ('Package and Push Artifact') {
+        //     agent any
+        //     when {
+        //         branch "master"
+        //     }
+        //     steps {
+        //         colourText("success", 'Packaging in progress...')
+        //         packageAsJars()
+        //     }
+
+        // }
+
+        // stage('Deploy'){
+        //     agent any
+        //     when {
+        //         anyOf {
+        //             branch "develop"
+        //             branch "release"
+        //             branch "master"
+        //         }
+        //     }
+        //     steps {
+        //         colourText("success", 'Deploy.')
+        //         script {
+        //             env.NODE_STAGE = "Deploy"
+        //             if (BRANCH_NAME == "develop") {
+        //                 env.DEPLOY_NAME = "dev"
+        //             }
+        //             else if  (BRANCH_NAME == "release") {
+        //                 env.DEPLOY_NAME = "test"
+        //             }
+        //             else if (BRANCH_NAME == "master") {
+        //                 env.DEPLOY_NAME = "prod"
+        //             }
+        //         }
+        //         milestone(1)
+        //         lock('Deployment Initiated') {
+        //             colourText("info", 'deployment in progress')
+        //             deploy()
+        //             // unstash zip
+        //         }
+        //     }
+        // }
+
+        // stage('Integration Tests') {
+        //     agent { label 'adrianharristesting' }
+        //     when {
+        //         anyOf {
+        //             branch "develop"
+        //             branch "release"
+        //         }
+        //     }
+        //     steps {
+        //         colourText("success", 'Integration Tests - For Release or Dev environment.')
+        //     }
+        // }
 
 
     }
@@ -228,9 +263,50 @@ pipeline {
 //   }
 // }
 
+
+def packageAsJars() {
+    agent any
+    steps {
+        colourText("info","Packaging as FAT jar")
+
+        sh '''
+            sbt clean compile assembly
+        '''
+    }
+    post {
+        success {
+            colourText("info","Successfully packaged as Far Jar")
+        }
+        failure {
+            colourText("warn","Failed to package as Fat Jar.")
+        }
+    }
+    steps {
+        colourText("info","Packaging as Thin jar")
+
+        sh '''
+            sbt clean compile package
+        '''
+    }
+    post {
+        success {
+            colourText("info","Successfully packaged as Thin Jar")
+        }
+        failure {
+            colourText("warn","Failed to package as Thin Jar.")
+        }
+    }
+}
+
+
 def deploy () {
     echo "Deploying Api app to ${env.DEPLOY_NAME}"
     withCredentials([string(credentialsId: "sbr-api-dev-secret-key", variable: 'APPLICATION_SECRET')]) {
-        deployToCloudFoundry("cloud-foundry-sbr-delete-${env.DEPLOY_NAME}-user", 'sbr', "${env.DEPLOY_NAME}", "${env.DEPLOY_NAME}-sbr-api", "${env.DEPLOY_NAME}-ons-sbr-api.zip", "conf/${env.DEPLOY_NAME}/manifest.yml")
+        deployToCloudFoundry("cloud-foundry-sbr-${env.DEPLOY_NAME}-user", 'sbr', "${env.DEPLOY_NAME}", "${env.DEPLOY_NAME}-sbr-api", "${env.DEPLOY_NAME}-ons-sbr-api.zip", "conf/${env.DEPLOY_NAME}/manifest.yml")
     }
+}
+
+def push (String newTag, String currentTag) {
+    echo "Pushing tag ${newTag} to Gitlab"
+    GitRelease( GIT_CREDS, newTag, currentTag, "${env.BUILD_ID}", "${env.BRANCH_NAME}", GIT_TYPE)
 }
