@@ -1,13 +1,20 @@
 import play.sbt.PlayScala
 import sbtbuildinfo.BuildInfoPlugin.autoImport._
 import sbtassembly.AssemblyPlugin.autoImport._
-// import BuildConfig._
 
-val publishRepo = settingKey[String]("publishRepo")
+
+
+lazy val publishRepo = settingKey[String]("publishRepo")
+lazy val artHost = settingKey[String]("artHost")
+lazy val artUser = settingKey[String]("artUser")
+lazy val artPassword = settingKey[String]("artPassword")
 
 licenses := Seq("MIT-License" -> url("https://github.com/ONSdigital/sbr-control-api/blob/master/LICENSE"))
 
 publishRepo := sys.props.getOrElse("publishRepo", default = "Unused transient repository")
+artHost := sys.props.getOrElse("artHost", default = "Unknown Artifactory host")
+artUser := sys.props.getOrElse("artUser", default = "Unknown username")
+artPassword := sys.props.getOrElse("artPassword", default = "Unknown password")
 
 // key-bindings
 lazy val ITest = config("it") extend Test
@@ -28,7 +35,8 @@ lazy val Constant = new {
 
 lazy val Resolvers = Seq(
   Resolver.typesafeRepo("releases"),
-  "Hadoop Releases" at "https://repository.cloudera.com/content/repositories/releases/"
+  "Hadoop Releases" at "https://repository.cloudera.com/content/repositories/releases/",
+  "Artifactory" at publishRepo.value
 )
 
 lazy val testSettings = Seq(
@@ -42,6 +50,7 @@ lazy val testSettings = Seq(
 lazy val publishingSettings = Seq(
   publishArtifact := false,
   publishTo := Some("Artifactory Realm" at publishRepo.value),
+  credentials += Credentials("Artifactory Realm", artHost.value, artUser.value, artPassword.value),
   releaseTagComment := s"Releasing $name ${(version in ThisBuild).value}",
   releaseCommitMessage := s"Setting Release tag to ${(version in ThisBuild).value}",
   // no commit - ignore zip and other package files
