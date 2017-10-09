@@ -11,10 +11,10 @@ lazy val artPassword = settingKey[String]("artPassword")
 
 licenses := Seq("MIT-License" -> url("https://github.com/ONSdigital/sbr-control-api/blob/master/LICENSE"))
 
-publishRepo := sys.props.getOrElse("publishRepo", default = "Unused transient repository")
-artHost := sys.props.getOrElse("artHost", default = "Unknown Artifactory host")
-artUser := sys.props.getOrElse("artUser", default = "Unknown username")
-artPassword := sys.props.getOrElse("artPassword", default = "Unknown password")
+publishRepo := sys.props.getOrElse("publish.repo", default = "https://Unused/transient/repository")
+artHost := sys.props.getOrElse("art.host", default = "Unknown Artifactory host")
+artUser := sys.props.getOrElse("art.user", default = "Unknown username")
+artPassword := sys.props.getOrElse("art.password", default = "Unknown password")
 
 // key-bindings
 lazy val ITest = config("it") extend Test
@@ -35,8 +35,7 @@ lazy val Constant = new {
 
 lazy val Resolvers = Seq(
   Resolver.typesafeRepo("releases"),
-  "Hadoop Releases" at "https://repository.cloudera.com/content/repositories/releases/",
-  "Artifactory" at publishRepo.value
+  "Hadoop Releases" at "https://repository.cloudera.com/content/repositories/releases/"
 )
 
 lazy val testSettings = Seq(
@@ -82,6 +81,8 @@ lazy val commonSettings = Seq (
     "-Ywarn-unused-import", //  Warn when imports are unused (don't want IntelliJ to do it automatically)
     "-Ywarn-numeric-widen" // Warn when numerics are widened
   ),
+  // @todo - merge two resolver statements
+  resolvers += "Artifactory" at s"${publishRepo.value}",
   resolvers ++= Resolvers,
   coverageExcludedPackages := ".*Routes.*;.*ReverseRoutes.*;.*javascript.*"
 )
