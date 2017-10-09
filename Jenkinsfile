@@ -15,6 +15,9 @@ pipeline {
         
         GIT_TYPE = "Github"
         GIT_CREDS = "github-sbr-user"
+        ARTIFACTORY_CREDS = "sbr-artifactory-user"
+        PUBLISH_REPO = ""
+        ARTIFACTORY_HOST = ""
     }
     options {
         skipDefaultCheckout()
@@ -134,6 +137,7 @@ pipeline {
                     newTag =  IncrementTag( currentTag, RELEASE_TYPE )
                     colourText("info", "Generated new tag: ${newTag}")
                     push(newTag, currentTag)
+                    // sh 'github_changelog_generator'
 
                 }
             }
@@ -254,60 +258,15 @@ pipeline {
 
 
 
-// def packageApp(String env) {
-//   withEnv(["ENV=${env}"]) {
-//     sh '''
-//       zip -g $ENV-ons-bi-api.zip conf/$ENV/krb5.conf
-//       zip -g $ENV-ons-bi-api.zip conf/$ENV/bi-$ENV-ci.keytab
-//     '''
-//   }
-// }
-
-
-def packageAsJars() {
-    agent any
-    steps {
-        colourText("info","Packaging as FAT jar")
-
-        sh '''
-            sbt clean compile assembly
-        '''
-    }
-    post {
-        success {
-            colourText("info","Successfully packaged as Far Jar")
-        }
-        failure {
-            colourText("warn","Failed to package as Fat Jar.")
-        }
-    }
-    steps {
-        colourText("info","Packaging as Thin jar")
-
-        sh '''
-            sbt clean compile package
-        '''
-    }
-    post {
-        success {
-            colourText("info","Successfully packaged as Thin Jar")
-        }
-        failure {
-            colourText("warn","Failed to package as Thin Jar.")
-        }
-    }
-}
-
-
 def deploy () {
     echo "Deploying Api app to ${env.DEPLOY_NAME}"
-    withCredentials([string(credentialsId: "sbr-api-dev-secret-key", variable: 'APPLICATION_SECRET')]) {
+    withCredentials([string(cPUBLISH_REPO redentialsId: "sbr-api-dev-secret-key", variable: 'APPLICATION_SECRET')]) {
         deployToCloudFoundry("cloud-foundry-sbr-${env.DEPLOY_NAME}-user", 'sbr', "${env.DEPLOY_NAME}", "${env.DEPLOY_NAME}-sbr-api", "${env.DEPLOY_NAME}-ons-sbr-api.zip", "conf/${env.DEPLOY_NAME}/manifest.yml")
     }
 }
 
 def push (String newTag, String currentTag) {
     echo "Pushing tag ${newTag} to Gitlab"
-    GitRelease( GIT_CREDS, newTag, currentTag, "${env.BUILD_ID}", "${env.BRANCH_NAME}", GIT_TYPE)
+    GitReleaseAndArchive( GIT_CREDS, ARTIFACTORY_CREDS, newTag, currentTag, "${env.BRANCH_NAME}", PUBLISH_REPO, ARTIFACTORY_HOST)
 }
 
