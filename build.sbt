@@ -29,7 +29,6 @@ lazy val Versions = new {
 
 lazy val Constant = new {
   val local = "mac"
-//  val appName = "sbr-api"
   val moduleName = "control-api"
   val projectStage = "alpha"
   val organisation = "ons"
@@ -49,8 +48,7 @@ lazy val testSettings = Seq(
 )
 
 lazy val publishingSettings = Seq(
-//  Some(Resolver.file("file", new File("/path/to/your/releases"))
-//  publishTo := Some("Artifactory Realm" at publishRepo.value),
+  publishArtifact := publishTrigger.value,
   publishTo := {
     if (System.getProperty("os.name").toLowerCase.startsWith(Constant.local) )
       Some(Resolver.file("file", new File(s"${System.getProperty("user.home").toLowerCase}/Documents/")))
@@ -65,9 +63,8 @@ lazy val publishingSettings = Seq(
 )
 
 lazy val noPublishSettings = Seq(
-//  publish := {},
-//  publishLocal := {},
-  publishArtifact := publishTrigger.value
+  publish := {},
+  publishLocal := {}
 )
 
 lazy val commonSettings = Seq (
@@ -107,8 +104,8 @@ lazy val api = (project in file("."))
   .settings(inConfig(ITest)(Defaults.testSettings) : _*)
   .settings(commonSettings: _*)
   .settings(testSettings:_*)
-  .settings(noPublishSettings:_*)
   .settings(publishingSettings:_*)
+  .settings(addArtifact(artifact in (Compile, assembly), assembly).settings: _*)
   .settings(
     organization := Constant.organisation,
     name := Constant.moduleName,
@@ -142,7 +139,7 @@ lazy val api = (project in file("."))
         excludeAll ExclusionRule("commons-logging", "commons-logging")
     ),
     // assembly
-    assemblyJarName in assembly := s"${Constant.organisation}_${Constant.moduleName}-assembly-$version.jar",
+    assemblyJarName in assembly := s"${Constant.organisation}_${Constant.moduleName}-assembly-${version.value}.jar",
     assemblyMergeStrategy in assembly := {
       case PathList("javax", "servlet", xs @ _*)                         => MergeStrategy.last
       case PathList("org", "apache", xs @ _*)                            => MergeStrategy.last
