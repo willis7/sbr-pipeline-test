@@ -55,14 +55,18 @@ lazy val publishingSettings = Seq(
   publishArtifact in (Compile, packageBin) := false,
   publishArtifact in (Compile, packageSrc) := false,
   publishArtifact in (Compile, packageDoc) := false,
-  artifactName := { (_, module: ModuleID, artefact: Artifact) =>
-    s"${module.organization}_${artefact.name}-${artefact.classifier.getOrElse("package")}-${module.revision}.${artefact.extension}"
-  },
+
   publishTo := {
     if (System.getProperty("os.name").toLowerCase.startsWith(Constant.local) )
       Some(Resolver.file("file", new File(s"${System.getProperty("user.home").toLowerCase}/Documents/")))
     else
       Some("Artifactory Realm" at publishRepo.value)
+  },
+  artifact in (Compile, assembly) ~= { art =>
+    art.copy(`type` = "package", `extension` = "jar", `classifier` = Some("assembly"), `name` = "")
+  },
+  artifactName := { (_, module: ModuleID, artefact: Artifact) =>
+    s"${module.organization}_${Constant.team}_${artefact.name}-${artefact.classifier.getOrElse("package")}-${module.revision}.${artefact.extension}"
   },
   credentials += Credentials("Artifactory Realm", artHost.value, artUser.value, artPassword.value),
   releaseTagComment := s"Releasing $name ${(version in ThisBuild).value}",
@@ -114,12 +118,6 @@ lazy val api = (project in file("."))
   .settings(commonSettings: _*)
   .settings(testSettings:_*)
   .settings(publishingSettings:_*)
-
-  .settings(
-    artifact in (Compile, assembly) ~= { art =>
-      art.copy(`type` = "package", `extension` = "jar", `classifier` = Some("assembly"))
-    }
-  )
   // add the assembly jar to current publish arts
   .settings(addArtifact(artifact in (Compile, assembly), assembly).settings: _*)
   .settings(
@@ -135,7 +133,8 @@ lazy val api = (project in file("."))
       scalaVersion,
       sbtVersion,
       BuildInfoKey.action("gitVersion") {
-        git.gitTagToVersionNumber.?.value.getOrElse(Some(Constant.projectStage))+"@"+ git.formattedDateVersion.?.value.getOrElse("")
+        git.gitTagToVersionNumber.?.value.getOrElse(Some(Constant.projectStage))+"@"+
+          git.formattedDateVersion.?.value.getOrElse("")
       }),
     // di router -> swagger
     routesGenerator := InjectedRoutesGenerator,
