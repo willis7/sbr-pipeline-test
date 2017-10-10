@@ -49,6 +49,7 @@ lazy val testSettings = Seq(
 
 lazy val publishingSettings = Seq(
   publishArtifact := publishTrigger.value,
+  publishArtifact in (Compile, packageSrc) := false,
   publishTo := {
     if (System.getProperty("os.name").toLowerCase.startsWith(Constant.local) )
       Some(Resolver.file("file", new File(s"${System.getProperty("user.home").toLowerCase}/Documents/")))
@@ -105,9 +106,10 @@ lazy val api = (project in file("."))
   .settings(commonSettings: _*)
   .settings(testSettings:_*)
   .settings(publishingSettings:_*)
+
   .settings(
     artifact in (Compile, packageBin) ~= { art =>
-      art.copy(`type` = "bundle", `classifier` = Some("assembly"))
+      art.copy(`type` = "jar")
     }
   )
   // add the assembly jar to current publish arts
