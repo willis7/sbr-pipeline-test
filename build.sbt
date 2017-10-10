@@ -55,6 +55,9 @@ lazy val publishingSettings = Seq(
   publishArtifact in (Compile, packageBin) := false,
   publishArtifact in (Compile, packageSrc) := false,
   publishArtifact in (Compile, packageDoc) := false,
+  artifactName := { (_, module: ModuleID, artefact: Artifact) =>
+    s"${module.organization}_${artefact.name}-${artefact.classifier.getOrElse("package")}-${module.revision}.${artefact.extension}"
+  },
   publishTo := {
     if (System.getProperty("os.name").toLowerCase.startsWith(Constant.local) )
       Some(Resolver.file("file", new File(s"${System.getProperty("user.home").toLowerCase}/Documents/")))
@@ -114,7 +117,7 @@ lazy val api = (project in file("."))
 
   .settings(
     artifact in (Compile, assembly) ~= { art =>
-      art.copy(`type` = "jar", `classifier` = Some("assembly"))
+      art.copy(`type` = "package", `extension` = "jar", `classifier` = Some("assembly"))
     }
   )
   // add the assembly jar to current publish arts
