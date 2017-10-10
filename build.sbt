@@ -3,7 +3,7 @@ import sbtbuildinfo.BuildInfoPlugin.autoImport._
 import sbtassembly.AssemblyPlugin.autoImport._
 
 
-
+lazy val publishTrigger = settingKey[Boolean]("publishTrigger")
 lazy val publishRepo = settingKey[String]("publishRepo")
 lazy val artHost = settingKey[String]("artHost")
 lazy val artUser = settingKey[String]("artUser")
@@ -11,6 +11,7 @@ lazy val artPassword = settingKey[String]("artPassword")
 
 licenses := Seq("MIT-License" -> url("https://github.com/ONSdigital/sbr-control-api/blob/master/LICENSE"))
 
+publishTrigger := sys.props.get("publish.trigger") exists (_ equalsIgnoreCase "true")
 publishRepo := sys.props.getOrElse("publish.repo", default = "https://Unused/transient/repository")
 artHost := sys.props.getOrElse("art.host", default = "Unknown Artifactory host")
 artUser := sys.props.getOrElse("art.user", default = "Unknown username")
@@ -19,23 +20,24 @@ artPassword := sys.props.getOrElse("art.password", default = "Unknown password")
 // key-bindings
 lazy val ITest = config("it") extend Test
 
+
 lazy val Versions = new {
   val scala = "2.11.11"
-  val appVersion = ""
   val scapegoatVersion = "1.1.0"
   val util = "0.27.8"
 }
 
 lazy val Constant = new {
-  val appName = "ons-sbr-api"
+  val local = "mac"
+//  val appName = "sbr-api"
+  val moduleName = "control-api"
   val projectStage = "alpha"
   val organisation = "ons"
   val team = "sbr"
 }
 
 lazy val Resolvers = Seq(
-  Resolver.typesafeRepo("releases"),
-  "Hadoop Releases" at "https://repository.cloudera.com/content/repositories/releases/"
+  Resolver.typesafeRepo("releases")
 )
 
 lazy val testSettings = Seq(
@@ -47,13 +49,25 @@ lazy val testSettings = Seq(
 )
 
 lazy val publishingSettings = Seq(
-  publishArtifact := false,
-  publishTo := Some("Artifactory Realm" at publishRepo.value),
+//  Some(Resolver.file("file", new File("/path/to/your/releases"))
+//  publishTo := Some("Artifactory Realm" at publishRepo.value),
+  publishTo := {
+    if (System.getProperty("os.name").toLowerCase.startsWith(Constant.local) )
+      Some(Resolver.file("file", new File(s"${System.getProperty("user.home").toLowerCase}/Documents/")))
+    else
+      Some("Artifactory Realm" at publishRepo.value)
+  },
   credentials += Credentials("Artifactory Realm", artHost.value, artUser.value, artPassword.value),
   releaseTagComment := s"Releasing $name ${(version in ThisBuild).value}",
   releaseCommitMessage := s"Setting Release tag to ${(version in ThisBuild).value}",
   // no commit - ignore zip and other package files
   releaseIgnoreUntrackedFiles := true
+)
+
+lazy val noPublishSettings = Seq(
+//  publish := {},
+//  publishLocal := {},
+  publishArtifact := publishTrigger.value
 )
 
 lazy val commonSettings = Seq (
@@ -81,9 +95,7 @@ lazy val commonSettings = Seq (
     "-Ywarn-unused-import", //  Warn when imports are unused (don't want IntelliJ to do it automatically)
     "-Ywarn-numeric-widen" // Warn when numerics are widened
   ),
-  // @todo - merge two resolver statements
-  resolvers += "Artifactory" at s"${publishRepo.value}",
-  resolvers ++= Resolvers,
+  resolvers ++= Resolvers ++ Seq("Artifactory" at s"${publishRepo.value}"),
   coverageExcludedPackages := ".*Routes.*;.*ReverseRoutes.*;.*javascript.*"
 )
 
@@ -95,13 +107,12 @@ lazy val api = (project in file("."))
   .settings(inConfig(ITest)(Defaults.testSettings) : _*)
   .settings(commonSettings: _*)
   .settings(testSettings:_*)
+  .settings(noPublishSettings:_*)
   .settings(publishingSettings:_*)
   .settings(
-    publishLocal := {},
-    publish := {},
-    name := Constant.appName,
-    moduleName := "control-api",
-    version := version.value,
+    organization := Constant.organisation,
+    name := Constant.moduleName,
+    version := (version in ThisBuild).value,
     buildInfoPackage := "controllers",
     // gives us last compile time and tagging info
     buildInfoKeys := Seq[BuildInfoKey](
@@ -131,7 +142,7 @@ lazy val api = (project in file("."))
         excludeAll ExclusionRule("commons-logging", "commons-logging")
     ),
     // assembly
-    assemblyJarName in assembly := s"${Constant.appName}-${version.value}.jar",
+    assemblyJarName in assembly := s"${Constant.organisation}_${Constant.moduleName}-assembly-$version.jar",
     assemblyMergeStrategy in assembly := {
       case PathList("javax", "servlet", xs @ _*)                         => MergeStrategy.last
       case PathList("org", "apache", xs @ _*)                            => MergeStrategy.last
