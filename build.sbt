@@ -57,7 +57,7 @@ lazy val publishingSettings = Seq(
   publishArtifact in (Compile, packageDoc) := false,
   publishTo := {
     if (System.getProperty("os.name").toLowerCase.startsWith(Constant.local) )
-      Some(Resolver.file("file", new File(s"${System.getProperty("user.home").toLowerCase}/Documents/")))
+      Some(Resolver.file("file", new File(s"${System.getProperty("user.home").toLowerCase}/Desktop/")))
     else
       Some("Artifactory Realm" at publishRepo.value)
   },
@@ -65,7 +65,7 @@ lazy val publishingSettings = Seq(
     art.copy(`type` = "package", `extension` = "jar", `classifier` = Some("assembly"), `name` = "")
   },
   artifactName := { (sv: ScalaVersion, module: ModuleID, artefact: Artifact) =>
-    module.organization + "_" + Constant.team + "_" + artefact.name + "-" + artefact.classifier.getOrElse("package") + "-" + module.revision + "." + artefact.extension
+    module.organization + "_" + artefact.name + "-" + artefact.classifier.getOrElse("package") + "-" + module.revision + "." + artefact.extension
   },
   credentials += Credentials("Artifactory Realm", artHost.value, artUser.value, artPassword.value),
   releaseTagComment := s"Releasing $name ${(version in ThisBuild).value}",
