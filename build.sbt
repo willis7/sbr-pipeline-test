@@ -106,7 +106,7 @@ lazy val api = (project in file("."))
   .settings(testSettings:_*)
   .settings(publishingSettings:_*)
   .settings(
-    artifact in (Compile, assembly) ~= { art =>
+    artifact in assembly ~= { art =>
       art.copy(`classifier` = Some("assembly"))
     }
   )
