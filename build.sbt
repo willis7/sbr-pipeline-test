@@ -108,12 +108,12 @@ lazy val api = (project in file("."))
   .settings(publishingSettings:_*)
 
   .settings(
-    artifact in (Compile, packageBin) ~= { art =>
+    artifact in assembly ~= { art =>
       art.copy(`type` = "jar")
     }
   )
   // add the assembly jar to current publish arts
-//  .settings(addArtifact(artifact in (Compile, assembly), assembly).settings: _*)
+  .settings(addArtifact(artifact in assembly, assembly).settings: _*)
   .settings(
     organization := Constant.organisation,
     name := Constant.moduleName,
