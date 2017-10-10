@@ -64,9 +64,8 @@ lazy val publishingSettings = Seq(
   artifact in (Compile, assembly) ~= { art =>
     art.copy(`type` = "package", `extension` = "jar", `classifier` = Some("assembly"), `name` = "")
   },
-  artifactName := { (_, module: ModuleID, artefact: Artifact) =>
-    module.organization + "_" + Constant.team + "_" + artefact.name + "-" + artefact.classifier.getOrElse("package" +
-      "") + "-" + module.revision + "." + artefact.extension
+  artifactName := { (sv: ScalaVersion, module: ModuleID, artefact: Artifact) =>
+    module.organization + "_" + Constant.team + "_" + artefact.name + "-" + artefact.classifier.getOrElse("package") + "-" + module.revision + "." + artefact.extension
   },
   credentials += Credentials("Artifactory Realm", artHost.value, artUser.value, artPassword.value),
   releaseTagComment := s"Releasing $name ${(version in ThisBuild).value}",
