@@ -50,12 +50,11 @@ lazy val testSettings = Seq(
 lazy val publishingSettings = Seq(
   publishArtifact := publishTrigger.value,
   publishMavenStyle := false,
+  checksums in publish := Nil,
   publishArtifact in Test := false,
-//  publishArtifact in Compile := false,
   publishArtifact in (Compile, packageBin) := false,
   publishArtifact in (Compile, packageSrc) := false,
   publishArtifact in (Compile, packageDoc) := false,
-
   publishTo := {
     if (System.getProperty("os.name").toLowerCase.startsWith(Constant.local) )
       Some(Resolver.file("file", new File(s"${System.getProperty("user.home").toLowerCase}/Documents/")))
@@ -66,7 +65,8 @@ lazy val publishingSettings = Seq(
     art.copy(`type` = "package", `extension` = "jar", `classifier` = Some("assembly"), `name` = "")
   },
   artifactName := { (_, module: ModuleID, artefact: Artifact) =>
-    s"${module.organization}_${Constant.team}_${artefact.name}-${artefact.classifier.getOrElse("package")}-${module.revision}.${artefact.extension}"
+    module.organization + "_" + Constant.team + "_" + artefact.name + "-" + artefact.classifier.getOrElse("package") "-" +
+      module.revision + "." + artefact.extension
   },
   credentials += Credentials("Artifactory Realm", artHost.value, artUser.value, artPassword.value),
   releaseTagComment := s"Releasing $name ${(version in ThisBuild).value}",
