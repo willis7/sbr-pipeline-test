@@ -9,8 +9,6 @@ lazy val artHost = settingKey[String]("artHost")
 lazy val artUser = settingKey[String]("artUser")
 lazy val artPassword = settingKey[String]("artPassword")
 
-licenses := Seq("MIT-License" -> url("https://github.com/ONSdigital/sbr-control-api/blob/master/LICENSE"))
-
 publishTrigger := sys.props.get("publish.trigger") exists (_ equalsIgnoreCase "true")
 publishRepo := sys.props.getOrElse("publish.repo", default = "https://Unused/transient/repository")
 artHost := sys.props.getOrElse("art.host", default = "Unknown-Artifactory-host")
@@ -30,6 +28,7 @@ lazy val Versions = new {
 lazy val Constant = new {
   val local = "mac"
   val projectStage = "alpha"
+  val team = "sbr"
 }
 
 lazy val Resolvers = Seq[Resolver](
@@ -96,7 +95,6 @@ lazy val commonSettings = Seq (
 )
 
 
-
 lazy val api = (project in file("."))
   .enablePlugins(BuildInfoPlugin, GitVersioning, GitBranchPrompt, PlayScala)
   .configs(ITest)
@@ -107,11 +105,13 @@ lazy val api = (project in file("."))
   // add the assembly jar to current publish arts
   .settings(addArtifact(artifact in (Compile, assembly), assembly).settings: _*)
   .settings(
-    developers := List(Developer("1", "SBR", "ons-sbr@ons.gov.uk", new java.net.URL(s"https://${artHost.value}/v1/home"))),
+    developers := List(Developer("Adrian Harris (Tech Lead)", "SBR", "ons-sbr-team@ons.gov.uk", new java.net.URL(s"https://${artHost.value}/v1/home"))),
     moduleName := "sbr-pipeline",
     organizationName := "ons",
     version := (version in ThisBuild).value,
     name := s"${organizationName.value}_${moduleName.value}",
+    licenses := Seq("MIT-License" -> url("https://github.com/ONSdigital/sbr-control-api/blob/master/LICENSE")),
+    sourceGenerators in Compile += buildInfo,
     buildInfoPackage := "controllers",
     // gives us last compile time and tagging info
     buildInfoKeys := Seq[BuildInfoKey](
@@ -123,10 +123,11 @@ lazy val api = (project in file("."))
       scalaVersion,
       sbtVersion,
       BuildInfoKey.action("gitVersion") {
-        git.formattedShaVersion.?.value.getOrElse("None")+"@"+ git.formattedDateVersion.?.value.getOrElse("None")
+        git.formattedShaVersion.?.value.getOrElse(Some("Unknown")).getOrElse("Unknown") +"@"+ git.formattedDateVersion.?.value.getOrElse("")
       },
+      BuildInfoKey.action("projectTeam"){ Constant.team },
       BuildInfoKey.action("projectStage"){ Constant.projectStage },
-      BuildInfoKey.action("scmInfo"){ scmInfo.?.value.getOrElse("") }
+      BuildInfoKey.action("repoAddress"){ Some(scmInfo.value.get.browseUrl).getOrElse("REPO_ADDRESS_NOT_FOUND")}
     ),
     // di router -> swagger
     routesGenerator := InjectedRoutesGenerator,
