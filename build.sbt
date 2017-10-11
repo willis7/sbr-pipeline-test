@@ -63,7 +63,7 @@ lazy val publishingSettings = Seq(
       Some("Artifactory Realm" at publishRepo.value)
   },
   artifact in (Compile, assembly) ~= { art =>
-    art.copy(`type` = "package", `extension` = "jar", `classifier` = Some("assembly"), `name` = "")
+    art.copy(`type` = "jar", `classifier` = Some("assembly"))
   },
   artifactName := { (sv: ScalaVersion, module: ModuleID, artefact: Artifact) =>
     module.organization + "_" + artefact.name + "-" + artefact.classifier.getOrElse("package") + "-" +
