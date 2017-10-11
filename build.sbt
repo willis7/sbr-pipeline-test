@@ -13,7 +13,7 @@ licenses := Seq("MIT-License" -> url("https://github.com/ONSdigital/sbr-control-
 
 publishTrigger := sys.props.get("publish.trigger") exists (_ equalsIgnoreCase "true")
 publishRepo := sys.props.getOrElse("publish.repo", default = "https://Unused/transient/repository")
-artHost := sys.props.getOrElse("art.host", default = "Unknown Artifactory host")
+artHost := sys.props.getOrElse("art.host", default = "Unknown-Artifactory-host")
 artUser := sys.props.getOrElse("art.user", default = "Unknown username")
 artPassword := sys.props.getOrElse("art.password", default = "Unknown password")
 
@@ -29,13 +29,10 @@ lazy val Versions = new {
 
 lazy val Constant = new {
   val local = "mac"
-  val moduleName = "control-api"
   val projectStage = "alpha"
-  val organisation = "ons"
-  val team = "sbr"
 }
 
-lazy val Resolvers = Seq(
+lazy val Resolvers = Seq[Resolver](
   Resolver.typesafeRepo("releases")
 )
 
@@ -62,20 +59,11 @@ lazy val publishingSettings = Seq(
   artifact in (Compile, assembly) ~= { art =>
     art.copy(`type` = "jar", `classifier` = Some("assembly"))
   },
-  artifactName in (Compile, assembly) := { (_, module: ModuleID, artefact: Artifact) =>
-    module.organization + "_" + artefact.name + "-" + artefact.classifier.getOrElse("package") + "-" +
-      "" + module.revision + "." + artefact.extension
-  },
   credentials += Credentials("Artifactory Realm", artHost.value, artUser.value, artPassword.value),
   releaseTagComment := s"Releasing $name ${(version in ThisBuild).value}",
   releaseCommitMessage := s"Setting Release tag to ${(version in ThisBuild).value}",
   // no commit - ignore zip and other package files
   releaseIgnoreUntrackedFiles := true
-)
-
-lazy val noPublishSettings = Seq(
-  publish := {},
-  publishLocal := {}
 )
 
 lazy val commonSettings = Seq (
@@ -119,21 +107,27 @@ lazy val api = (project in file("."))
   // add the assembly jar to current publish arts
   .settings(addArtifact(artifact in (Compile, assembly), assembly).settings: _*)
   .settings(
-    organization := Constant.organisation,
-    name := Constant.moduleName,
+    developers := List(Developer("1", "SBR", "ons-sbr@ons.gov.uk", new java.net.URL(s"https://${artHost.value}/v1/home"))),
+    moduleName := "sbr-pipeline",
+    organizationName := "ons",
     version := (version in ThisBuild).value,
+    name := s"${organizationName.value}_${moduleName.value}",
     buildInfoPackage := "controllers",
     // gives us last compile time and tagging info
     buildInfoKeys := Seq[BuildInfoKey](
-      organization,
+      organizationName,
+      moduleName,
       name,
+      developers,
       version,
       scalaVersion,
       sbtVersion,
       BuildInfoKey.action("gitVersion") {
-        git.gitTagToVersionNumber.?.value.getOrElse(Some(Constant.projectStage))+"@"+
-          git.formattedDateVersion.?.value.getOrElse("")
-      }),
+        git.formattedShaVersion.?.value.getOrElse("None")+"@"+ git.formattedDateVersion.?.value.getOrElse("None")
+      },
+      BuildInfoKey.action("projectStage"){ Constant.projectStage },
+      BuildInfoKey.action("scmInfo"){ scmInfo.?.value.getOrElse("") }
+    ),
     // di router -> swagger
     routesGenerator := InjectedRoutesGenerator,
     buildInfoOptions += BuildInfoOption.ToMap,
@@ -152,7 +146,7 @@ lazy val api = (project in file("."))
         excludeAll ExclusionRule("commons-logging", "commons-logging")
     ),
     // assembly
-    assemblyJarName in assembly := s"${Constant.organisation}_${Constant.moduleName}-assembly-${version.value}.jar",
+    assemblyJarName in assembly := s"${organizationName}_$moduleName-assembly-${(version in ThisBuild).value}.jar",
     assemblyMergeStrategy in assembly := {
       case PathList("javax", "servlet", xs @ _*)                         => MergeStrategy.last
       case PathList("org", "apache", xs @ _*)                            => MergeStrategy.last
