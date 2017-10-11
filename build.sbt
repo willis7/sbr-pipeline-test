@@ -53,6 +53,8 @@ lazy val publishingSettings = Seq(
   checksums in publish := Nil,
   publishArtifact in Test := false,
   publishArtifact in Compile := false,
+  publishArtifact in (Compile, assembly) := true,
+
 //  publishArtifact in (Compile, packageBin) := false,
 //  publishArtifact in (Compile, packageSrc) := false,
 //  publishArtifact in (Compile, packageDoc) := false,
@@ -67,7 +69,7 @@ lazy val publishingSettings = Seq(
   },
   artifactName := { (sv: ScalaVersion, module: ModuleID, artefact: Artifact) =>
     module.organization + "_" + artefact.name + "-" + artefact.classifier.getOrElse("package") + "-" +
-      "" + module.revision + "[" + sv + "]." + artefact.extension
+      "" + module.revision + "." + artefact.extension
   },
   credentials += Credentials("Artifactory Realm", artHost.value, artUser.value, artPassword.value),
   releaseTagComment := s"Releasing $name ${(version in ThisBuild).value}",
