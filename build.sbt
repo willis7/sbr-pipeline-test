@@ -108,16 +108,17 @@ lazy val api = (project in file("."))
     developers := List(Developer("Adrian Harris (Tech Lead)", "SBR", "ons-sbr-team@ons.gov.uk", new java.net.URL(s"https://${artHost.value}/v1/home"))),
     moduleName := "sbr-pipeline",
     organizationName := "ons",
+    description := "<description>",
     version := (version in ThisBuild).value,
     name := s"${organizationName.value}_${moduleName.value}",
     licenses := Seq("MIT-License" -> url("https://github.com/ONSdigital/sbr-control-api/blob/master/LICENSE")),
-    sourceGenerators in Compile += buildInfo,
     buildInfoPackage := "controllers",
     // gives us last compile time and tagging info
     buildInfoKeys := Seq[BuildInfoKey](
       organizationName,
       moduleName,
       name,
+      description,
       developers,
       version,
       scalaVersion,

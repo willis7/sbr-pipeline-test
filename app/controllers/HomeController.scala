@@ -29,9 +29,8 @@ class HomeController extends Controller {
   @ApiResponses(Array(
     new ApiResponse(code = 200, message = "Success - Displays a json object of basic api health.")
   ))
-  def status = Action { request =>
-    val host = request.host
-    Redirect(url = s"http://${host}/health").flashing("redirect" -> "You are being redirected to health status", "status" -> "ok")
+  def home = Action {
+    Ok(BuildInfo.toJson).as(JSON)
   }
 
   //public api
