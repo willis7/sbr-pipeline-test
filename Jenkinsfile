@@ -52,7 +52,7 @@ pipeline {
                 }
                 sh '''
                 $SBT clean compile "project api" universal:packageBin coverage test coverageReport
-                cp target/universal/sbr-pipeline-*.zip dev-ons-sbr-pipeline.zip
+                cp target/universal/ons_sbr-pipeline-*.zip dev-ons-sbr-pipeline.zip
 
                 '''
             }
@@ -100,29 +100,29 @@ pipeline {
 
 
         // bundle all libs and dependencies
-//        stage ('Bundle') {
-//            agent any
-//            when {
-//                anyOf {
-//                    branch "develop"
-//                    branch "release"
-//                    branch "master"
-//                }
-//            }
-//            steps {
-//                script {
-//                    env.NODE_STAGE = "Bundle"
-//                }
-//                colourText("info", "Bundling....")
-//                // dir('conf') {
-//                //     git(url: "$GITLAB_URL/StatBusReg/sbr-api.git", credentialsId: 'sbr-gitlab-id', branch: 'feature/develop')
-//                // }
-//                // packageAsJars()
-//                // packageApp('dev')
-//                // packageApp('test')
-//                // stash name: "zip"
-//            }
-//        }
+        stage ('Bundle') {
+            agent any
+            when {
+                anyOf {
+                    branch "develop"
+                    branch "release"
+                    branch "master"
+                }
+            }
+            steps {
+                script {
+                    env.NODE_STAGE = "Bundle"
+                }
+                colourText("info", "Bundling....")
+                 dir('conf') {
+                     git(url: "$GITLAB_URL/StatBusReg/sbr-api.git", credentialsId: 'sbr-gitlab-id', branch: 'feature/develop')
+                 }
+                // packageAsJars()
+                // packageApp('dev')
+                // packageApp('test')
+                // stash name: "zip"
+            }
+        }
 //
 //        stage("Releases"){
 //            agent any
