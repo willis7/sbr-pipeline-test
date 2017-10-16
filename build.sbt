@@ -112,6 +112,9 @@ lazy val api = (project in file("."))
     version := (version in ThisBuild).value,
     name := s"${organizationName.value}_${moduleName.value}",
     licenses := Seq("MIT-License" -> url("https://github.com/ONSdigital/sbr-control-api/blob/master/LICENSE")),
+    startYear := Some(2017),
+//    entryApiURL :=,
+//    homepage := Some(new java.net.URL(s"https://${artHost.value}/v1/home"))),
     buildInfoPackage := "controllers",
     // gives us last compile time and tagging info
     buildInfoKeys := Seq[BuildInfoKey](
@@ -123,12 +126,16 @@ lazy val api = (project in file("."))
       version,
       scalaVersion,
       sbtVersion,
+      startYear,
+//      entryApiURL,
+//      homepage,
       BuildInfoKey.action("gitVersion") {
         git.formattedShaVersion.?.value.getOrElse(Some("Unknown")).getOrElse("Unknown") +"@"+ git.formattedDateVersion.?.value.getOrElse("")
       },
+      BuildInfoKey.action("codeLicenses"){ licenses.value },
       BuildInfoKey.action("projectTeam"){ Constant.team },
       BuildInfoKey.action("projectStage"){ Constant.projectStage },
-      BuildInfoKey.action("repoAddress"){ Some(scmInfo.value.get.browseUrl).getOrElse("REPO_ADDRESS_NOT_FOUND")}
+      BuildInfoKey.action("repositoryAddress"){ Some(scmInfo.value.get.browseUrl).getOrElse("REPO_ADDRESS_NOT_FOUND")}
     ),
     // di router -> swagger
     routesGenerator := InjectedRoutesGenerator,

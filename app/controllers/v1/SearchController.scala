@@ -54,6 +54,11 @@ class SearchController @Inject() (ws: WSClient) extends ControllerUtils {
     }
   }
 
+  def hbaseTest(): Action[AnyContent] = Action.async {
+    println("hello")
+    sendRequest("https://cdhdn-p01-01.ons.statistics.gov.uk:20550/sbr_dev_db:enterprise/2")
+  }
+
   //public api
   @ApiOperation(
     value = "Json Object of matching legal unit",
@@ -88,6 +93,9 @@ class SearchController @Inject() (ws: WSClient) extends ControllerUtils {
         RequestTimeout(errAsJson(408, "request_timeout", "This may be due to connection being blocked."))
       case e =>
         ServiceUnavailable(errAsJson(503, "service_unavailable", "Cannot Connect to host. Please verify the address is correct."))
+      case ex =>
+        logger.error(s"give url was: $url", ex)
+        BadRequest(errAsJson(500, "unknown_error", s"${ex.getMessage} == $ex === pot.cause: ${ex.getCause}"))
     }
     res
   }
