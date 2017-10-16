@@ -87,7 +87,7 @@ class SearchController @Inject() (ws: WSClient) extends ControllerUtils {
   }
 
   def sendRequest(url: String): Future[Result] = {
-    val res = ws.url(url).withRequestTimeout(5000.millis).get().map {
+    val res = ws.url(url).withRequestTimeout(Duration.Inf).get().map {
       response =>
         Ok(response.body).as(JSON)
     } recover {
