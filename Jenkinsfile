@@ -117,10 +117,6 @@ pipeline {
                  dir('conf') {
                      git(url: "$GITLAB_URL/StatBusReg/sbr-api.git", credentialsId: 'sbr-gitlab-id', branch: 'develop')
                  }
-                // packageAsJars()
-                // packageApp('dev')
-                // packageApp('test')
-                // stash name: "zip"
             }
         }
 //
