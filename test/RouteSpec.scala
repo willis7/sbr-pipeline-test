@@ -15,14 +15,14 @@ class RouteSpec extends TestUtils {
   }
 
   "HomeController" should {
-    "render default app route" in {
-      val home = fakeRequest("/")
-      // redirect
-      status(home) mustEqual SEE_OTHER
-      val res = getValue(redirectLocation(home))
-      res must include("/health")
-      flash(home).get("status") mustBe Some("ok")
-    }
+    //    "render default app route" in {
+    //      val home = fakeRequest("/")
+    //      // redirect
+    //      status(home) mustEqual SEE_OTHER
+    //      val res = getValue(redirectLocation(home))
+    //      res must include("/health")
+    //      flash(home).get("status") mustBe Some("ok")
+    //    }
 
     "display swagger documentation" in {
       val docs = fakeRequest("/docs")
