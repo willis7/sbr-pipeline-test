@@ -115,7 +115,7 @@ pipeline {
                 }
                 colourText("info", "Bundling....")
                  dir('conf') {
-                     git(url: "$GITLAB_URL/StatBusReg/sbr-api.git", credentialsId: 'sbr-gitlab-id', branch: 'feature/develop')
+                     git(url: "$GITLAB_URL/StatBusReg/sbr-api.git", credentialsId: 'sbr-gitlab-id', branch: 'develop')
                  }
                 // packageAsJars()
                 // packageApp('dev')
