@@ -1,21 +1,17 @@
 import play.sbt.PlayScala
+
 import sbtbuildinfo.BuildInfoPlugin.autoImport._
 import sbtassembly.AssemblyPlugin.autoImport._
+import com.typesafe.config.ConfigFactory
 
+lazy val applicationConfig = settingKey[(Boolean, String, String, String, String)]("config values")
 
-lazy val publishTrigger = settingKey[Boolean]("publishTrigger")
-lazy val publishRepo = settingKey[String]("publishRepo")
-lazy val artHost = settingKey[String]("artHost")
-lazy val artUser = settingKey[String]("artUser")
-lazy val artPassword = settingKey[String]("artPassword")
-
-licenses := Seq("MIT-License" -> url("https://github.com/ONSdigital/sbr-control-api/blob/master/LICENSE"))
-
-publishTrigger := sys.props.get("publish.trigger") exists (_ equalsIgnoreCase "true")
-publishRepo := sys.props.getOrElse("publish.repo", default = "https://Unused/transient/repository")
-artHost := sys.props.getOrElse("art.host", default = "Unknown Artifactory host")
-artUser := sys.props.getOrElse("art.user", default = "Unknown username")
-artPassword := sys.props.getOrElse("art.password", default = "Unknown password")
+applicationConfig := {
+  val conf = ConfigFactory.parseFile((resourceDirectory in Compile).value / "application.conf").resolve()
+    .getConfig("env.default.artifactory")
+  (conf.getBoolean("publish-init"), conf.getString("publish-repository"), conf.getString("host"),
+    conf.getString("user"), conf.getString("password"))
+}
 
 // key-bindings
 lazy val ITest = config("it") extend Test
@@ -48,7 +44,8 @@ lazy val testSettings = Seq(
 )
 
 lazy val publishingSettings = Seq(
-  publishArtifact := publishTrigger.value,
+  publishArtifact := applicationConfig.value._1,
+  //  publishArtifact := (applicationConfig map { case (x, _, _, _, _) => x }).value,
   publishMavenStyle := false,
   checksums in publish := Nil,
   publishArtifact in Test := false,
@@ -59,7 +56,8 @@ lazy val publishingSettings = Seq(
     if (System.getProperty("os.name").toLowerCase.startsWith(Constant.local) )
       Some(Resolver.file("file", new File(s"${System.getProperty("user.home").toLowerCase}/Desktop/")))
     else
-      Some("Artifactory Realm" at publishRepo.value)
+      Some("Artifactory Realm" at applicationConfig.value._2)
+    //      (applicationConfig map { case (_, x, _, _, _) => Some("Artifactory Realm" at x) }).value
   },
   artifact in (Compile, assembly) ~= { art =>
     art.copy(`type` = "jar", `classifier` = Some("assembly"))
@@ -67,7 +65,7 @@ lazy val publishingSettings = Seq(
   artifactName := { (sv: ScalaVersion, module: ModuleID, artefact: Artifact) =>
     module.organization + "_" + artefact.name + "-" + artefact.classifier.getOrElse("package") + "-" + module.revision + "." + artefact.extension
   },
-  credentials += Credentials("Artifactory Realm", artHost.value, artUser.value, artPassword.value),
+  credentials += (applicationConfig map { case (_, _, x, y, z) => Credentials("Artifactory Realm", x, y, z) }).value,
   releaseTagComment := s"Releasing $name ${(version in ThisBuild).value}",
   releaseCommitMessage := s"Setting Release tag to ${(version in ThisBuild).value}",
   // no commit - ignore zip and other package files
@@ -104,7 +102,7 @@ lazy val commonSettings = Seq (
     "-Ywarn-unused-import", //  Warn when imports are unused (don't want IntelliJ to do it automatically)
     "-Ywarn-numeric-widen" // Warn when numerics are widened
   ),
-  resolvers ++= Resolvers ++ Seq("Artifactory" at s"${publishRepo.value}"),
+  resolvers ++= Resolvers ++ Seq("Artifactory" at s"${applicationConfig.value._2}"),
   coverageExcludedPackages := ".*Routes.*;.*ReverseRoutes.*;.*javascript.*"
 )
 

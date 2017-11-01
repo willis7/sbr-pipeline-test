@@ -2,8 +2,9 @@ package controllers
 
 import javax.inject.Singleton
 
-import io.swagger.annotations.{ Api, ApiOperation, ApiResponse, ApiResponses }
-import play.api.mvc.{ Action, Controller }
+import com.typesafe.config.ConfigFactory
+import io.swagger.annotations.{Api, ApiOperation, ApiResponse, ApiResponses}
+import play.api.mvc.{Action, Controller}
 
 /**
  * version listings is defined using the BuildInfo feature
@@ -22,6 +23,9 @@ class VersionController extends Controller {
     new ApiResponse(code = 200, message = "Success - Displays a version list as json.")
   ))
   def version = Action {
-    Ok(BuildInfo.toJson).as(JSON)
+    println("sys prop" + sys.props)
+    println(ConfigFactory.parseFile((resourceDirectory in Compile).value / "application.conf"))
+    Ok("")
+    //    Ok(BuildInfo.toJson).as(JSON)
   }
 }
