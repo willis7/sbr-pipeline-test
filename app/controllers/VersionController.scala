@@ -2,7 +2,6 @@ package controllers
 
 import javax.inject.Singleton
 
-import com.typesafe.config.ConfigFactory
 import io.swagger.annotations.{Api, ApiOperation, ApiResponse, ApiResponses}
 import play.api.mvc.{Action, Controller}
 
@@ -23,8 +22,6 @@ class VersionController extends Controller {
     new ApiResponse(code = 200, message = "Success - Displays a version list as json.")
   ))
   def version = Action {
-    println("sys prop" + sys.props)
-    println(ConfigFactory.parseFile((resourceDirectory in Compile).value / "application.conf"))
     Ok("")
     //    Ok(BuildInfo.toJson).as(JSON)
   }
