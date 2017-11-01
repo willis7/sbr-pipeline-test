@@ -2,8 +2,8 @@ package controllers
 
 import javax.inject.Singleton
 
-import io.swagger.annotations.{Api, ApiOperation, ApiResponse, ApiResponses}
-import play.api.mvc.{Action, Controller}
+import io.swagger.annotations.{ Api, ApiOperation, ApiResponse, ApiResponses }
+import play.api.mvc.{ Action, Controller }
 
 /**
  * version listings is defined using the BuildInfo feature
@@ -22,7 +22,7 @@ class VersionController extends Controller {
     new ApiResponse(code = 200, message = "Success - Displays a version list as json.")
   ))
   def version = Action {
-    Ok("")
-    //    Ok(BuildInfo.toJson).as(JSON)
+
+        Ok(BuildInfo.toJson).as(JSON)
   }
 }
