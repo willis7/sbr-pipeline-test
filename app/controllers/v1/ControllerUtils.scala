@@ -1,13 +1,14 @@
 package controllers.v1
 
-import play.api.mvc.{ Controller, Result }
-import com.typesafe.scalalogging.StrictLogging
-import models.units.{ Enterprise, EnterpriseObj }
-import utils.CsvProcessor.readFile
-
 import scala.annotation.tailrec
 import scala.concurrent.Future
 import scala.util.{ Failure, Success, Try }
+
+import com.typesafe.scalalogging.StrictLogging
+import play.api.mvc.{ Controller, Result }
+
+import utils.CsvProcessor.readFile
+import models.units.{ Enterprise, EnterpriseObj }
 
 /**
  * Created by haqa on 10/07/2017.
@@ -15,7 +16,6 @@ import scala.util.{ Failure, Success, Try }
 trait ControllerUtils extends Controller with StrictLogging {
 
   //  protected def config: Config
-
   @tailrec
   final protected def buildErrMsg(x: Throwable, msgs: List[String] = Nil): String = {
     Option(x.getCause) match {

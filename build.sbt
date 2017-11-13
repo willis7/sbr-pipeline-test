@@ -23,17 +23,25 @@ lazy val Versions = new {
   val scala = "2.11.11"
   val scapegoatVersion = "1.1.0"
   val util = "0.27.8"
+  val hbaseVersion = "1.3.1"
+  val hadoopVersion = "2.5.1"
+  val sparkVersion = "2.2.0"
 }
 
 lazy val Constant = new {
   val local = "mac"
   val projectStage = "alpha"
   val team = "sbr"
+  val apacheHBase = "org.apache.hbase"
+  val apacheHadoop = "org.apache.hadoop"
+  val apacheSpark = "org.apache.spark"
 }
 
 lazy val Resolvers = Seq[Resolver](
+  "cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/",
   Resolver.typesafeRepo("releases")
 )
+
 
 lazy val testSettings = Seq(
   sourceDirectory in ITest := baseDirectory.value / "/test/it",
@@ -92,6 +100,45 @@ lazy val commonSettings = Seq (
   ),
   resolvers ++= Resolvers ++ Seq("Artifactory" at s"${publishRepo.value}"),
   coverageExcludedPackages := ".*Routes.*;.*ReverseRoutes.*;.*javascript.*"
+)
+
+lazy val hadoopDeps: Seq[ModuleID] = Seq(
+  // HBase
+  Constant.apacheHBase   % "hbase-common"                      % Versions.hbaseVersion,
+  Constant.apacheHBase   % "hbase-common"                      % Versions.hbaseVersion   classifier "tests",
+  Constant.apacheHBase   % "hbase-client"                      % Versions.hbaseVersion   exclude ("org.slf4j", "slf4j-api"),
+  Constant.apacheHBase   % "hbase-hadoop-compat"               % Versions.hbaseVersion,
+  Constant.apacheHBase   % "hbase-hadoop-compat"               % Versions.hbaseVersion   classifier "tests",
+  Constant.apacheHBase   % "hbase-hadoop2-compat"              % Versions.hbaseVersion,
+  Constant.apacheHBase   % "hbase-hadoop2-compat"              % Versions.hbaseVersion   classifier "tests",
+  Constant.apacheHBase   % "hbase-server"                      % Versions.hbaseVersion,
+  Constant.apacheHBase   % "hbase-server"                      % Versions.hbaseVersion   classifier "tests",
+
+  // Hadoop
+  Constant.apacheHadoop  % "hadoop-common"                     % Versions.hadoopVersion,
+  Constant.apacheHadoop  % "hadoop-common"                     % Versions.hadoopVersion  classifier "tests",
+  Constant.apacheHadoop  % "hadoop-hdfs"                       % Versions.hadoopVersion,
+  Constant.apacheHadoop  % "hadoop-hdfs"                       % Versions.hadoopVersion  classifier "tests",
+  Constant.apacheHadoop  % "hadoop-mapreduce-client-core"      % Versions.hadoopVersion,
+  Constant.apacheHadoop  % "hadoop-mapreduce-client-jobclient" % Versions.hadoopVersion
+
+).map(_.excludeAll ( ExclusionRule("log4j", "log4j"), ExclusionRule ("org.slf4j", "slf4j-log4j12")))
+
+
+lazy val hbaseSpark: Seq[ModuleID] = Seq(
+  // Spark
+  Constant.apacheSpark   %% "spark-core"                       % Versions.sparkVersion,
+  Constant.apacheSpark   %% "spark-sql"                        % Versions.sparkVersion,
+  Constant.apacheSpark   %% "spark-mllib"                      % Versions.sparkVersion,
+  Constant.apacheSpark   %% "spark-streaming"                  % Versions.sparkVersion,
+  Constant.apacheSpark   %% "spark-hive"                       % Versions.sparkVersion,
+
+  Constant.apacheHBase   %  "hbase-spark"                      % "1.2.0-cdh5.10.1"
+)
+
+lazy val patchDeps: Seq[ModuleID] = Seq(
+  // fix java.lang.ClassNotFoundException: de.unkrig.jdisasm.Disassembler -> caused by Janino compiler
+  "org.codehaus.janino"  %  "janino"                           % "3.0.7"
 )
 
 
@@ -153,7 +200,7 @@ lazy val api = (project in file("."))
       "org.webjars"                  %     "swagger-ui"          %    "2.2.10-1",
       "com.typesafe"                 %      "config"             %    "1.3.1"
         excludeAll ExclusionRule("commons-logging", "commons-logging")
-    ),
+    ) ++ hbaseSpark ++ hadoopDeps ++ patchDeps,
     // assembly
     assemblyJarName in assembly := s"${organizationName}_$moduleName-assembly-${(version in ThisBuild).value}.jar",
     assemblyMergeStrategy in assembly := {

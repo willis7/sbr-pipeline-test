@@ -4,17 +4,17 @@ import javax.inject.Inject
 
 import com.outworkers.util.play._
 import io.swagger.annotations._
-import play.api.mvc.{Action, AnyContent, Result}
+import play.api.Logger
+import play.api.mvc.{ Action, AnyContent, Result }
 
 import utils.Utilities.errAsJson
-//import com.typesafe.config.Config
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
 import play.api.libs.ws.WSClient
 
-import models.units.{Enterprise, EnterpriseObj}
+import models.units.{ Enterprise, EnterpriseObj }
 
 /**
  * Created by haqa on 04/07/2017.
@@ -91,12 +91,12 @@ class SearchController @Inject() (ws: WSClient) extends ControllerUtils {
       response =>
         Ok(response.body).as(JSON)
     } recover {
-//      case t: TimeoutException =>
-//        RequestTimeout(errAsJson(408, "request_timeout", "This may be due to connection being blocked."))
-//      case e =>
-//        ServiceUnavailable(errAsJson(503, "service_unavailable", "Cannot Connect to host. Please verify the address is correct."))
+      //      case t: TimeoutException =>
+      //        RequestTimeout(errAsJson(408, "request_timeout", "This may be due to connection being blocked."))
+      //      case e =>
+      //        ServiceUnavailable(errAsJson(503, "service_unavailable", "Cannot Connect to host. Please verify the address is correct."))
       case ex =>
-        logger.error(s"give url was: $url", ex)
+        Logger.error(s"give url was: $url", ex)
         BadRequest(errAsJson(500, "unknown_error", s"${ex.getMessage} == $ex === pot.cause: ${ex.getCause}"))
     }
     res
