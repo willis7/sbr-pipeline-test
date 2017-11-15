@@ -200,7 +200,7 @@ lazy val api = (project in file("."))
       "org.webjars"                  %     "swagger-ui"          %    "2.2.10-1",
       "com.typesafe"                 %      "config"             %    "1.3.1"
         excludeAll ExclusionRule("commons-logging", "commons-logging")
-    ) ++ hbaseSpark ++ hadoopDeps ++ patchDeps,
+    ),
     // assembly
     assemblyJarName in assembly := s"${organizationName}_$moduleName-assembly-${(version in ThisBuild).value}.jar",
     assemblyMergeStrategy in assembly := {
