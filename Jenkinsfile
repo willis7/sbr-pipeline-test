@@ -33,7 +33,7 @@ pipeline {
                 deleteDir()
                 checkout scm
                 stash name: 'app'
-                sh "$SBT version"
+                // sh "$SBT version"
                 script {
                     version = '1.0.' + env.BUILD_NUMBER
                     currentBuild.displayName = version
@@ -102,13 +102,7 @@ pipeline {
         // bundle all libs and dependencies
         stage ('Bundle') {
             agent any
-            when {
-                anyOf {
-                    branch "develop"
-                    branch "release"
-                    branch "master"
-                }
-            }
+
             steps {
                 script {
                     env.NODE_STAGE = "Bundle"
@@ -183,13 +177,13 @@ pipeline {
 
          stage('Deploy'){
              agent any
-             when {
-                 anyOf {
-                     branch "develop"
-                     branch "release"
-                     branch "master"
-                 }
-             }
+            //  when {
+            //      anyOf {
+            //          branch "develop"
+            //          branch "release"
+            //          branch "master"
+            //      }
+            //  }
              steps {
                  colourText("success", 'Deploy.')
                  script {
@@ -202,6 +196,9 @@ pipeline {
                      }
                      else if (BRANCH_NAME == "master") {
                          env.DEPLOY_NAME = "prod"
+                     }
+                     else {
+                         env.DEPLOY_NAME = "dev"
                      }
                  }
                  milestone(1)
@@ -256,7 +253,7 @@ pipeline {
 def deploy () {
     echo "Deploying Api app to ${env.DEPLOY_NAME}"
     withCredentials([string(credentialsId: "sbr-api-dev-secret-key", variable: 'APPLICATION_SECRET')]) {
-        deployToCloudFoundry("cloud-foundry-sbr-${env.DEPLOY_NAME}-user", 'sbr', "${env.DEPLOY_NAME}", "${env.DEPLOY_NAME}-pipeline", "${env.DEPLOY_NAME}-ons_sbr-pipeline.zip", "conf/${env.DEPLOY_NAME}/manifest.yml")
+        deployToCloudFoundry("cloud-foundry-sbr-${env.DEPLOY_NAME}-user", 'sbr', "${env.DEPLOY_NAME}", "${env.DEPLOY_NAME}-pipeline", "${env.DEPLOY_NAME}-ons-sbr-pipeline.zip", "conf/${env.DEPLOY_NAME}/manifest.yml")
     }
 }
 
