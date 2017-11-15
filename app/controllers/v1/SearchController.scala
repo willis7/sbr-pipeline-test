@@ -58,7 +58,7 @@ class SearchController @Inject() (ws: WSClient) extends ControllerUtils {
 
   def hbaseTest(): Action[AnyContent] = Action.async {
     println("hello")
-    sendRequest("https://cdhdn-p01-01.ons.statistics.gov.uk:20550/sbr_dev_db:enterprise/2")
+    sendRequest("https://10.50.14.210:8443/hbase/sbr_dev_db:unit_links/ii/d")
   }
 
   //public api
@@ -87,7 +87,7 @@ class SearchController @Inject() (ws: WSClient) extends ControllerUtils {
   }
 
   def sendRequest(url: String): Future[Result] = {
-    val res = ws.url(url).withRequestTimeout(Duration.Inf).get().map {
+    val res = ws.url(url).withHeaders("Content-Type" -> "application/json").withRequestTimeout(Duration.Inf).get().map {
       response =>
         Ok(response.body).as(JSON)
     } recover {
