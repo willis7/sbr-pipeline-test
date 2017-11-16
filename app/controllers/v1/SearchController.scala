@@ -59,7 +59,7 @@ class SearchController @Inject() (ws: WSClient) extends ControllerUtils {
 
   def hbaseTest(): Action[AnyContent] = Action.async {
     val ip = sys.props.getOrElse("`CF_IP", default = "ZZZZZZZZZ:OOOO")
-    sendRequest(s"https://$ip/hbase/sbr_dev_db:unit_links/ii/d")
+    sendRequest(s"https://10.50.14.210:8443/hbase/sbr_dev_db:unit_links/ii/d")
   }
 
   //public api
