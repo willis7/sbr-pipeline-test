@@ -20,7 +20,7 @@ import models.units.{ Enterprise, EnterpriseObj }
  * Created by haqa on 04/07/2017.
  */
 @Api("Search")
-class SearchController @Inject() (ws: WSClient) extends ControllerUtils {
+class SearchController @Inject() (ws: WSClient, configuration: play.api.Configuration) extends ControllerUtils {
   // (implicit config: Config)
   //  protected val host: String = config.getString("legal.units.source.host")
 
@@ -57,8 +57,10 @@ class SearchController @Inject() (ws: WSClient) extends ControllerUtils {
   }
 
   def hbaseTest(): Action[AnyContent] = Action.async {
-    println("hello")
-    sendRequest("https://cdhdn-p01-01.ons.statistics.gov.uk:20550/sbr_dev_db:enterprise/2")
+    val ip = sys.props.getOrElse("`CF_IP", default = "ZZZZZZZZZ")
+    val username = configuration.underlying.getString("auth.user")
+    Ok(username).future
+    //    sendRequest(s"https://10.50.14.210:8443/hbase/sbr_dev_db:unit_links/ii/d")
   }
 
   //public api
