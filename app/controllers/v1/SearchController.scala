@@ -21,7 +21,7 @@ import utils.Utilities.errAsJson
  * Created by haqa on 04/07/2017.
  */
 @Api("Search")
-class SearchController @Inject() (ws: WSClient) extends ControllerUtils {
+class SearchController @Inject() (ws: WSClient, configuration: play.api.Configuration) extends ControllerUtils {
   // (implicit config: Config)
   //  protected val host: String = config.getString("legal.units.source.host")
 
