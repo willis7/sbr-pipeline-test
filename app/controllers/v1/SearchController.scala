@@ -2,19 +2,20 @@ package controllers.v1
 
 import javax.inject.Inject
 
-import com.outworkers.util.play._
-import io.swagger.annotations._
-import play.api.Logger
-import play.api.mvc.{ Action, AnyContent, Result }
-
-import utils.Utilities.errAsJson
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
+import com.google.common.base.Charsets
+import com.google.common.io.BaseEncoding
+import com.outworkers.util.play._
+import io.swagger.annotations._
+import play.api.Logger
 import play.api.libs.ws.WSClient
+import play.api.mvc.{ Action, AnyContent, Result }
 
 import models.units.{ Enterprise, EnterpriseObj }
+import utils.Utilities.errAsJson
 
 /**
  * Created by haqa on 04/07/2017.
@@ -57,8 +58,8 @@ class SearchController @Inject() (ws: WSClient) extends ControllerUtils {
   }
 
   def hbaseTest(): Action[AnyContent] = Action.async {
-    println("hello")
-    sendRequest("https://10.50.14.210:8443/hbase/sbr_dev_db:unit_links/ii/d")
+    val ip = sys.props.getOrElse("cf.ip", default = "ZZZZZZZZZ:OOOO")
+    sendRequest(s"https://$ip/hbase/sbr_dev_db:unit_links/ii/d")
   }
 
   //public api
@@ -87,18 +88,22 @@ class SearchController @Inject() (ws: WSClient) extends ControllerUtils {
   }
 
   def sendRequest(url: String): Future[Result] = {
-    val res = ws.url(url).withHeaders("Content-Type" -> "application/json").withRequestTimeout(Duration.Inf).get().map {
-      response =>
-        Ok(response.body).as(JSON)
-    } recover {
-      //      case t: TimeoutException =>
-      //        RequestTimeout(errAsJson(408, "request_timeout", "This may be due to connection being blocked."))
-      //      case e =>
-      //        ServiceUnavailable(errAsJson(503, "service_unavailable", "Cannot Connect to host. Please verify the address is correct."))
-      case ex =>
-        Logger.error(s"give url was: $url", ex)
-        BadRequest(errAsJson(500, "unknown_error", s"${ex.getMessage} == $ex === pot.cause: ${ex.getCause}"))
-    }
+    val username = sys.props.getOrElse("auth.user", default = "YYYYYYYY")
+    val password = sys.props.getOrElse("auth.password", default = "XXXXXXXX")
+    val auth = BaseEncoding.base64().encode(s"$username:$password".getBytes(Charsets.UTF_8))
+    val res = ws.url(url).withHeaders("Content-Type" -> "application/json", "Authorization" -> s"Basic $auth")
+      .withRequestTimeout(Duration.Inf).get().map {
+        response =>
+          Ok(response.body).as(JSON)
+      } recover {
+        //      case t: TimeoutException =>
+        //        RequestTimeout(errAsJson(408, "request_timeout", "This may be due to connection being blocked."))
+        //      case e =>
+        //        ServiceUnavailable(errAsJson(503, "service_unavailable", "Cannot Connect to host. Please verify the address is correct."))
+        case ex =>
+          Logger.error(s"give url was: $url", ex)
+          BadRequest(errAsJson(500, "unknown_error", s"${ex.getMessage} -- EXCEPTION:$ex -- CAUSE: ${ex.getCause}"))
+      }
     res
   }
 
