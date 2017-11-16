@@ -1,5 +1,5 @@
 #!groovy
-@Library('jenkins-pipeline-shared@feature/version') _
+@Library('jenkins-pipeline-shared@feature/deploy-env-vars') _
 
 pipeline {
     environment {
@@ -50,6 +50,7 @@ pipeline {
                 script {
                     env.NODE_STAGE = "Build"
                 }
+                // buildWithArgs()
                 sh '''
                 $SBT clean compile "project api" universal:packageBin coverage test coverageReport
                 cp target/universal/ons_sbr-pipeline-*.zip dev-ons-sbr-pipeline.zip
@@ -261,4 +262,15 @@ def push (String newTag, String currentTag) {
     echo "Pushing tag ${newTag} to Gitlab"
     GitReleaseAndArchive( GIT_CREDS, ARTIFACTORY_CREDS, newTag, currentTag, "${env.BRANCH_NAME}", PUBLISH_REPO, ARTIFACTORY_HOST)
 }
+
+// def buildWithArgs() {
+//     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sbr-dev-kerberos-password', usernameVariable: 'KB_USERNAME', passwordVariable: 'KB_PASSWORD']]) {
+//         // $SBT clean compile "project api" -Dcf-ip=10.50.14.210:8443 -Dauth.user=${KB_USERNAME} -Dauth.password=${KB_PASSWORD} universal:packageBin coverage test coverageReport
+//         sh '''
+//             $SBT clean compile "project ap" -Dcf-ip="10.50.14.210:8443" -Dauth.user=${KB_USERNAME} -Dauth.password=${KB_PASSWORD} universal:packageBin coverage test coverageReport
+//             cp target/universal/ons_sbr-pipeline-*.zip dev-ons-sbr-pipeline.zip
+
+//         '''
+//     }
+// }
 
