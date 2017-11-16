@@ -58,8 +58,10 @@ class SearchController @Inject() (ws: WSClient) extends ControllerUtils {
   }
 
   def hbaseTest(): Action[AnyContent] = Action.async {
-    val ip = sys.props.getOrElse("`CF_IP", default = "ZZZZZZZZZ:OOOO")
-    sendRequest(s"https://10.50.14.210:8443/hbase/sbr_dev_db:unit_links/ii/d")
+    val ip = sys.props.getOrElse("`CF_IP", default = "ZZZZZZZZZ")
+    val username = configuration.underlying.getString("auth.user")
+    Ok(username).future
+    //    sendRequest(s"https://10.50.14.210:8443/hbase/sbr_dev_db:unit_links/ii/d")
   }
 
   //public api
@@ -88,8 +90,8 @@ class SearchController @Inject() (ws: WSClient) extends ControllerUtils {
   }
 
   def sendRequest(url: String): Future[Result] = {
-    val username = sys.props.getOrElse("AUTH_USER", default = "YYYYYYYY")
-    val password = sys.props.getOrElse("AUTH_PASSWORD", default = "XXXXXXXX")
+    val username = configuration.underlying.getString("auth.user")
+    val password = configuration.underlying.getString("auth.password")
     val auth = BaseEncoding.base64().encode(s"$username:$password".getBytes(Charsets.UTF_8))
     val res = ws.url(url).withHeaders("Content-Type" -> "application/json", "Authorization" -> s"Basic $auth")
       .withRequestTimeout(Duration.Inf).get().map {
