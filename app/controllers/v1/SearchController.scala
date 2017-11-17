@@ -59,11 +59,11 @@ class SearchController @Inject() (ws: WSClient, configuration: play.api.Configur
 
   def hbaseTest(): Action[AnyContent] = Action.async {
     val ip = sys.props.getOrElse("`CF_IP", default = "ZZZZZZZZZ")
-    val username = configuration.underlying.getString("auth.user")
-    val password = configuration.underlying.getString("auth.password")
-    val auth = BaseEncoding.base64().encode(s"$username:$password".getBytes(Charsets.UTF_8))
-    Ok(auth).future
-//    sendRequest(s"https://10.50.14.210:8443/hbase/sbr_dev_db:unit_links/ii/d")
+//     val username = configuration.underlying.getString("auth.user")
+//     val password = configuration.underlying.getString("auth.password")
+//     val auth = BaseEncoding.base64().encode(s"$username:$password".getBytes(Charsets.UTF_8))
+//     Ok(auth).future
+   sendRequest(s"https://10.50.14.210:8443/hbase/sbr_dev_db:unit_links/ii/d")
   }
 
   //public api
