@@ -97,7 +97,7 @@ class SearchController @Inject() (ws: WSClient, configuration: play.api.Configur
     val res = ws.url(url).withHeaders("Content-Type" -> "application/json", "Authorization" -> s"Basic $auth")
       .withRequestTimeout(Duration.Inf).get().map {
         response =>
-          Ok(s"$url === $username : $password ").as(JSON)
+          Ok(response.body).as(JSON)
       } recover {
         //      case t: TimeoutException =>
         //        RequestTimeout(errAsJson(408, "request_timeout", "This may be due to connection being blocked."))
@@ -105,8 +105,7 @@ class SearchController @Inject() (ws: WSClient, configuration: play.api.Configur
         //        ServiceUnavailable(errAsJson(503, "service_unavailable", "Cannot Connect to host. Please verify the address is correct."))
         case ex =>
           Logger.error(s"give url was: $url", ex)
-        BadRequest(s"$url === $username : $password ")
-//           BadRequest(errAsJson(500, "unknown_error", s"${ex.getMessage} -- EXCEPTION:$ex -- CAUSE: ${ex.getCause}"))
+          BadRequest(errAsJson(500, "unknown_error", s"${ex.getMessage} -- EXCEPTION:$ex -- CAUSE: ${ex.getCause}"))
       }
     res
   }
