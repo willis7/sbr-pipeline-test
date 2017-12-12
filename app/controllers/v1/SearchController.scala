@@ -62,7 +62,7 @@ class SearchController @Inject() (ws: WSClient, configuration: play.api.Configur
 //     val password = configuration.underlying.getString("auth.password")
 //     val auth = BaseEncoding.base64().encode(s"$username:$password".getBytes(Charsets.UTF_8))
 //     Ok(auth).future
-   sendRequest(s"http://$ip/hbase/sbr_dev_db:unit_links/ii/d")
+   sendRequest(s"$ip/hbase/sbr_dev_db:unit_links/ii/d")
   }
 
   //public api
