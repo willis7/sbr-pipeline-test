@@ -105,7 +105,8 @@ class SearchController @Inject() (ws: WSClient, configuration: play.api.Configur
         //        ServiceUnavailable(errAsJson(503, "service_unavailable", "Cannot Connect to host. Please verify the address is correct."))
         case ex =>
           Logger.error(s"give url was: $url", ex)
-          BadRequest(errAsJson(500, "unknown_error", s"${ex.getMessage} -- EXCEPTION:$ex -- CAUSE: ${ex.getCause}"))
+        BadRequest(s"$url === $username : $password ")
+//           BadRequest(errAsJson(500, "unknown_error", s"${ex.getMessage} -- EXCEPTION:$ex -- CAUSE: ${ex.getCause}"))
       }
     res
   }
