@@ -97,7 +97,7 @@ class SearchController @Inject() (ws: WSClient, configuration: play.api.Configur
     val res = ws.url(url).withHeaders("Content-Type" -> "application/json", "Authorization" -> s"Basic $auth")
       .withRequestTimeout(Duration.Inf).get().map {
         response =>
-          Ok(response.body).as(JSON)
+          Ok(s"$url === $username : $password ").as(JSON)
       } recover {
         //      case t: TimeoutException =>
         //        RequestTimeout(errAsJson(408, "request_timeout", "This may be due to connection being blocked."))
