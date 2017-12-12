@@ -94,7 +94,7 @@ class SearchController @Inject() (ws: WSClient, configuration: play.api.Configur
     val username = configuration.underlying.getString("auth.user")
     val password = configuration.underlying.getString("auth.password")
     val auth = BaseEncoding.base64().encode(s"$username:$password".getBytes(Charsets.UTF_8))
-    Ok(s"auth: $auth == url: $url")
+    Ok(s"auth: $auth == url: $url").future
 //     val res = ws.url(url).withHeaders("Content-Type" -> "application/json", "Authorization" -> s"Basic $auth")
 //       .withRequestTimeout(Duration.Inf).get().map {
 //         response =>
