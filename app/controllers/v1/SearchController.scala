@@ -62,7 +62,7 @@ class SearchController @Inject() (ws: WSClient, configuration: play.api.Configur
 //     val password = configuration.underlying.getString("auth.password")
 //     val auth = BaseEncoding.base64().encode(s"$username:$password".getBytes(Charsets.UTF_8))
 //     Ok(auth).future
-   sendRequest(s"$ip/hbase/sbr_dev_db:unit_links/ii/d")
+   sendRequest(s"http://$ip/hbase/sbr_dev_db:unit_links/ii/d")
   }
 
   //public api
@@ -94,21 +94,21 @@ class SearchController @Inject() (ws: WSClient, configuration: play.api.Configur
     val username = configuration.underlying.getString("auth.user")
     val password = configuration.underlying.getString("auth.password")
     val auth = BaseEncoding.base64().encode(s"$username:$password".getBytes(Charsets.UTF_8))
-    Ok(s"auth: $auth == url: $url").future
-//     val res = ws.url(url).withHeaders("Content-Type" -> "application/json", "Authorization" -> s"Basic $auth")
-//       .withRequestTimeout(Duration.Inf).get().map {
-//         response =>
-//           Ok(response.body).as(JSON)
-//       } recover {
-//         //      case t: TimeoutException =>
-//         //        RequestTimeout(errAsJson(408, "request_timeout", "This may be due to connection being blocked."))
-//         //      case e =>
-//         //        ServiceUnavailable(errAsJson(503, "service_unavailable", "Cannot Connect to host. Please verify the address is correct."))
-//         case ex =>
-//           Logger.error(s"give url was: $url", ex)
-//           BadRequest(errAsJson(500, "unknown_error", s"${ex.getMessage} -- EXCEPTION:$ex -- CAUSE: ${ex.getCause}"))
-//       }
-//     res
+//     Ok(s"auth: $auth == url: $url").future
+    val res = ws.url(url).withHeaders("Content-Type" -> "application/json", "Authorization" -> s"Basic $auth")
+      .withRequestTimeout(Duration.Inf).get().map {
+        response =>
+          Ok(response.body).as(JSON)
+      } recover {
+        //      case t: TimeoutException =>
+        //        RequestTimeout(errAsJson(408, "request_timeout", "This may be due to connection being blocked."))
+        //      case e =>
+        //        ServiceUnavailable(errAsJson(503, "service_unavailable", "Cannot Connect to host. Please verify the address is correct."))
+        case ex =>
+          Logger.error(s"give url was: $url", ex)
+          BadRequest(errAsJson(500, "unknown_error", s"${ex.getMessage} -- EXCEPTION:$ex -- CAUSE: ${ex.getCause}"))
+      }
+    res
   }
 
 }
