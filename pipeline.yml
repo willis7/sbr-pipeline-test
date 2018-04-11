@@ -1,5 +1,0 @@
-pipelineType: scala
-runTests: true
-testCommand: "sbt test"
-deployUponTestSuccess: true
-deploymentEnvironment: "test"

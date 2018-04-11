@@ -1,4 +1,11 @@
 #!/bin/groovy
 @Library('jenkins-pipeline-shared') _
 import uk.gov.ons.*
-new stdPipeline().execute()
+
+onsPipeline {
+  pipelineType = "scala"
+  runTests = true
+  testCommand = "sbt test"
+  deployUponTestSuccess = true
+  deploymentEnvironment = "test"
+}
