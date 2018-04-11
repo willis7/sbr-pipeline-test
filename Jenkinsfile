@@ -1,8 +1,7 @@
 #!/bin/groovy
 @Library('jenkins-pipeline-shared') _
 
-onsPipeline {
-  pipelineType = "scala"
+scalaPipeline {
   runTests = true
   testCommand = "sbt test"
   deployUponTestSuccess = true
